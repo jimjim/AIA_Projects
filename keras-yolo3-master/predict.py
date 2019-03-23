@@ -55,8 +55,8 @@ def _main_(args):
             if cv2.waitKey(1) == 27: 
                 break  # esc to quit
         cv2.destroyAllWindows()        
-    elif input_path[-4:] == '.mp4': # do detection on a video  
-        video_out = output_path + input_path.split('/')[-1]
+    elif input_path[-4:] == '.avi': # do detection on a video  
+        video_out = output_path + "detected_"+ input_path.split('/')[-1]
         video_reader = cv2.VideoCapture(input_path)
 
         nb_frames = int(video_reader.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -65,7 +65,7 @@ def _main_(args):
 
         video_writer = cv2.VideoWriter(video_out,
                                cv2.VideoWriter_fourcc(*'MPEG'), 
-                               50.0, 
+                               15.0, 
                                (frame_w, frame_h))
         # the main loop
         batch_size  = 1
