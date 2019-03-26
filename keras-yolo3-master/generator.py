@@ -71,7 +71,10 @@ class BatchGenerator(Sequence):
         for train_instance in self.instances[l_bound:r_bound]:
             # augment input image and fix object's position and size
             img, all_objs = self._aug_image(train_instance, net_h, net_w)
-            
+            if img is None:
+                print(">>>Pass istance")
+                continue
+                
             for obj in all_objs:
                 # find the best anchor box for this object
                 max_anchor = None                
@@ -159,7 +162,10 @@ class BatchGenerator(Sequence):
         image_name = instance['filename']
         image = cv2.imread(image_name) # RGB image
         
-        if image is None: print('Cannot find ', image_name)
+        if image is None: 
+            print('Cannot find ', image_name)
+            return None,None
+        
         image = image[:,:,::-1] # RGB image
             
         image_h, image_w, _ = image.shape

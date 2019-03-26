@@ -4,6 +4,8 @@ import argparse
 import os
 import numpy as np
 import json
+import sys
+
 from voc import parse_voc_annotation
 from yolo import create_yolov3_model, dummy_loss
 from generator import BatchGenerator
@@ -273,6 +275,8 @@ def _main_(args):
     print('mAP: {:.4f}'.format(sum(average_precisions.values()) / len(average_precisions)))           
 
 if __name__ == '__main__':
+    sys.stdout = open('./training_beetle_0323_4.txt','w')
+    print ("Hello stackoverflow!")
     argparser = argparse.ArgumentParser(description='train and evaluate YOLO_v3 model on any dataset')
     argparser.add_argument('-c', '--conf', help='path to configuration file')   
 

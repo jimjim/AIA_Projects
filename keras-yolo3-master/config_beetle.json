@@ -9,7 +9,7 @@
     "train": {
         "train_image_folder":   "/project/jt072-09-biodiv-beetle/ds_train/images/",
         "train_annot_folder":   "/project/jt072-09-biodiv-beetle/ds_train/annotations/",
-        "cache_name":           "beetle_train_0323.pkl",
+        "cache_name":           "beetle_train_0323_4.pkl",
 
         "train_times":          3,
         "batch_size":           16,
@@ -25,8 +25,8 @@
         "xywh_scale":           1,
         "class_scale":          1,
 
-        "tensorboard_dir":      "log_beetle_0323",
-        "saved_weights_name":   "beetle_0323.h5",
+        "tensorboard_dir":      "log_beetle_0323_4",
+        "saved_weights_name":   "beetle_0323_4.h5",
         "debug":                true
     },
 
