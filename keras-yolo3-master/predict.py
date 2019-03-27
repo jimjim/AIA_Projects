@@ -5,7 +5,8 @@ import argparse
 import json
 import cv2
 from utils.utils import get_yolo_boxes, makedirs
-from utils.bbox import draw_boxes
+from utils.bbox import draw_boxes, draw_boxes_w_classifier
+from utils.classify import Beetle_Classifier
 from keras.models import load_model
 from tqdm import tqdm
 import numpy as np
@@ -24,7 +25,7 @@ def _main_(args):
     #   Set some parameter
     ###############################       
     net_h, net_w = 416, 416 # a multiple of 32, the smaller the faster
-    obj_thresh, nms_thresh = 0.9, 0.85
+    obj_thresh, nms_thresh = 0.95, 0.85
 
     ###############################
     #   Load the model
@@ -32,6 +33,7 @@ def _main_(args):
     os.environ['CUDA_VISIBLE_DEVICES'] = config['train']['gpus']
     infer_model = load_model(config['train']['saved_weights_name'])
 
+    bc_net = Beetle_Classifier()
     ###############################
     #   Predict bounding boxes 
     ###############################
@@ -84,7 +86,8 @@ def _main_(args):
 
                     for i in range(len(images)):
                         # draw bounding boxes on the image using labels
-                        draw_boxes(images[i], batch_boxes[i], config['model']['labels'], obj_thresh)   
+                        #draw_boxes(images[i], batch_boxes[i], config['model']['labels'], obj_thresh)  
+                        draw_boxes_w_classifier(bc_net, images[i], batch_boxes[i], config['model']['labels'], obj_thresh)   
 
                         # show the video with detection bounding boxes          
                         if show_window: cv2.imshow('video with bboxes', images[i])  
@@ -111,14 +114,15 @@ def _main_(args):
         # the main loop
         for image_path in image_paths:
             image = cv2.imread(image_path)
+            
             print(image_path)
 
             # predict the bounding boxes
             boxes = get_yolo_boxes(infer_model, [image], net_h, net_w, config['model']['anchors'], obj_thresh, nms_thresh)[0]
 
             # draw bounding boxes on the image using labels
-            draw_boxes(image, boxes, config['model']['labels'], obj_thresh) 
-     
+            #draw_boxes(image, boxes, config['model']['labels'], obj_thresh) 
+            draw_boxes_w_classifier(bc_net, image, boxes, config['model']['labels'], obj_thresh) 
             # write the image with bounding boxes to file
             cv2.imwrite(output_path + image_path.split('/')[-1], np.uint8(image))         
 

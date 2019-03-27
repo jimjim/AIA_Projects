@@ -87,3 +87,59 @@ def draw_boxes(image, boxes, labels, obj_thresh, quiet=True):
                         thickness=2)
         
     return image          
+def _correct_box(s, e):
+    if s <0:s = 0
+    if e <0:e = 0
+    if s>=e:
+        print("incorrect box val %d:%d"%(s,e))
+        s = e = 0
+    return s,e
+
+def draw_boxes_w_classifier(cf, image, boxes, labels, obj_thresh, quiet=True):
+    image_ori = image.copy()
+    for box in boxes:
+        label_str = ''
+        label = -1
+        
+        for i in range(len(labels)):
+            if box.classes[i] > obj_thresh:
+                if label_str != '': label_str += ', '
+                label_str += (labels[i] + ' ' + str(round(box.get_score()*100, 2)) + '%')
+                label = i
+            if not quiet: print(label_str)
+                
+        if label >= 0:
+            text_size = cv2.getTextSize(label_str, cv2.FONT_HERSHEY_SIMPLEX, 1.1e-3 * image.shape[0], 5)
+            width, height = text_size[0][0], text_size[0][1]
+            region = np.array([[box.xmin-3,        box.ymin], 
+                               [box.xmin-3,        box.ymin-height-26], 
+                               [box.xmin+width+13, box.ymin-height-26], 
+                               [box.xmin+width+13, box.ymin]], dtype='int32')  
+            ### Test
+            y0 , y1 = _correct_box(box.ymin, box.ymax)
+            x0 , x1 = _correct_box(box.xmin, box.xmax)
+            h = y1 - y0
+            w = x1 - x0
+            if h > w:
+                w = h
+            else:
+                h = w
+            frame_cropped_box = image_ori[y0:y0+h, x0:x0+w]
+            pid = cf.predict_Beetle_id(frame_cropped_box)   
+            print(">>>detected %d"%pid)
+            #img_path_cropped = os.path.join(out_img_folder, "%s_box_%d.jpg"%(_build_filename(lname,fcnt,f_idx), bug_id))   
+            img_path_cropped = './output/box_%d_%d.jpg'%(x0,y0)        
+            cv2.imwrite(img_path_cropped, frame_cropped_box)              
+            ####
+
+            cv2.rectangle(img=image, pt1=(box.xmin,box.ymin), pt2=(box.xmax,box.ymax), color=get_color(label), thickness=5)
+            cv2.fillPoly(img=image, pts=[region], color=get_color(label))
+            cv2.putText(img=image, 
+                        text=label_str, 
+                        org=(box.xmin+13, box.ymin - 13), 
+                        fontFace=cv2.FONT_HERSHEY_SIMPLEX, 
+                        fontScale=1e-3 * image.shape[0], 
+                        color=(0,0,0), 
+                        thickness=2)
+        
+    return image 
