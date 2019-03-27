@@ -58,7 +58,7 @@ def _main_(args):
                 break  # esc to quit
         cv2.destroyAllWindows()        
     elif input_path[-4:] == '.avi': # do detection on a video  
-        video_out = output_path + "detected_"+ input_path.split('/')[-1]
+        video_out = output_path + "detected_davc"+ input_path.split('/')[-1]
         video_reader = cv2.VideoCapture(input_path)
 
         nb_frames = int(video_reader.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -66,7 +66,7 @@ def _main_(args):
         frame_w = int(video_reader.get(cv2.CAP_PROP_FRAME_WIDTH))
 
         video_writer = cv2.VideoWriter(video_out,
-                               cv2.VideoWriter_fourcc(*'MPEG'), 
+                               cv2.VideoWriter_fourcc(*'DAVC'), 
                                15.0, 
                                (frame_w, frame_h))
         # the main loop

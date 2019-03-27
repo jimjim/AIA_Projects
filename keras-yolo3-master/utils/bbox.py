@@ -125,15 +125,16 @@ def draw_boxes_w_classifier(cf, image, boxes, labels, obj_thresh, quiet=True):
             else:
                 h = w
             frame_cropped_box = image_ori[y0:y0+h, x0:x0+w]
-            pid = cf.predict_Beetle_id(frame_cropped_box)   
-            print(">>>detected %d"%pid)
+            pid = cf.predict_Beetle_id(frame_cropped_box)
+            label_str = "%d_%s"%(pid, label_str)
+            #print(">>>detected %d"%pid)
             #img_path_cropped = os.path.join(out_img_folder, "%s_box_%d.jpg"%(_build_filename(lname,fcnt,f_idx), bug_id))   
-            img_path_cropped = './output/box_%d_%d.jpg'%(x0,y0)        
-            cv2.imwrite(img_path_cropped, frame_cropped_box)              
+            #img_path_cropped = './output/box_%d_%d.jpg'%(x0,y0)        
+            #cv2.imwrite(img_path_cropped, frame_cropped_box)              
             ####
 
             cv2.rectangle(img=image, pt1=(box.xmin,box.ymin), pt2=(box.xmax,box.ymax), color=get_color(label), thickness=5)
-            cv2.fillPoly(img=image, pts=[region], color=get_color(label))
+            cv2.fillPoly(img=image, pts=[region], color=get_color(pid))
             cv2.putText(img=image, 
                         text=label_str, 
                         org=(box.xmin+13, box.ymin - 13), 
