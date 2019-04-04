@@ -151,7 +151,7 @@ def do_nms(boxes, nms_thresh):
         nb_class = len(boxes[0].classes)
     else:
         return
-        
+    #print(str(boxes), "\nlen:%d"%nb_class)    
     for c in range(nb_class):
         sorted_indices = np.argsort([-box.classes[c] for box in boxes])
 
@@ -199,10 +199,13 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w):
             
             # last elements are class probabilities
             classes = netout[row,col,b,5:]
-            
+            #print("box found r:%d col:%d nb:%d"%(row, col, b))
+            #print("box detail %s %s %s %s %s %s"%(x-w/2, y-h/2, x+w/2, y+h/2, objectness, classes))
             box = BoundBox(x-w/2, y-h/2, x+w/2, y+h/2, objectness, classes)
 
             boxes.append(box)
+            
+            #print(str(netout[row, col,:,:]))
 
     return boxes
 
