@@ -5,7 +5,7 @@ import argparse
 import json
 import cv2
 from utils.utils import get_yolo_boxes, makedirs
-from utils.bbox import draw_boxes, draw_boxes_w_classifier
+from utils.bbox import draw_boxes, draw_boxes_w_classifier, draw_boxes_w_classifier_ex
 from utils.classify import Beetle_Classifier
 from keras.models import load_model
 from tqdm import tqdm
@@ -74,20 +74,21 @@ def _main_(args):
         images      = []
         start_point = 0 #%
         show_window = False
-        for i in tqdm(range(nb_frames)):
+        for idx in tqdm(range(nb_frames)):
             _, image = video_reader.read()
 
-            if (float(i+1)/nb_frames) > start_point/100.:
+            if (float(idx+1)/nb_frames) > start_point/100.:
+                
                 images += [image]
-
-                if (i%batch_size == 0) or (i == (nb_frames-1) and len(images) > 0):
+                
+                if (idx%batch_size == 0) or (idx == (nb_frames-1) and len(images) > 0):
                     # predict the bounding boxes
                     batch_boxes = get_yolo_boxes(infer_model, images, net_h, net_w, config['model']['anchors'], obj_thresh, nms_thresh)
-
+                    
                     for i in range(len(images)):
                         # draw bounding boxes on the image using labels
                         #draw_boxes(images[i], batch_boxes[i], config['model']['labels'], obj_thresh)  
-                        draw_boxes_w_classifier(bc_net, images[i], batch_boxes[i], config['model']['labels'], obj_thresh)   
+                        draw_boxes_w_classifier_ex(idx, bc_net, images[i], batch_boxes[i], config['model']['labels'], obj_thresh)   
 
                         # show the video with detection bounding boxes          
                         if show_window: cv2.imshow('video with bboxes', images[i])  

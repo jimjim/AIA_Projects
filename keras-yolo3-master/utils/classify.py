@@ -16,4 +16,11 @@ class Beetle_Classifier:
         img = np.expand_dims(img, axis = 0)
         pred = self.net.predict(img)[0]
         pred_y = np.argmax(pred)
-        return pred_y+1
+        return pred_y
+
+    def predict_Beetle_id_wP(self, img):
+        img = cv2.resize(img, (200,200), interpolation=cv2.INTER_CUBIC)
+        img = np.expand_dims(img, axis = 0)
+        pred = self.net.predict(img)[0]
+        pred_y = np.argmax(pred)
+        return pred_y, pred
