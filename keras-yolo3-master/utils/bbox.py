@@ -354,9 +354,9 @@ def draw_boxes_w_classifier_sort(f_idx, cf, image, boxes, labels, obj_thresh, qu
     fw.write('\n')
     fw.write(str(box_xy))
     frame_det = np.array(frame_det)
-    #print(frame_det)
+    print(frame_det)
     track_bbs_ids = cf.update(frame_det)
-    #print(track_bbs_ids)
+    print(track_bbs_ids)
     ### Draw all boxes test
     revised_img = False
     i=0
@@ -369,12 +369,14 @@ def draw_boxes_w_classifier_sort(f_idx, cf, image, boxes, labels, obj_thresh, qu
             continue
         #temp code    
         #cid = box_xy[bid]['cid']
+        if i>= track_bbs_ids.shape[0]:
+            break
         cid = int(track_bbs_ids[i, 4])
         box.xmin = int(track_bbs_ids[i, 0])
         box.xmax = int(track_bbs_ids[i, 2])
         box.ymin = int(track_bbs_ids[i, 1])
         box.ymax = int(track_bbs_ids[i, 3])
-        print(cid, box.xmin, box.xmax, box.ymin, box.ymax)
+        print(i,cid, box.xmin, box.xmax, box.ymin, box.ymax)
         i += 1
         label_str = (labels[label] + ' ' + str(round(box.get_score()*100, 2)) + '%')
         if revised:
