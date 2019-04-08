@@ -5,8 +5,9 @@ import argparse
 import json
 import cv2
 from utils.utils import get_yolo_boxes, makedirs
-from utils.bbox import draw_boxes, draw_boxes_w_classifier, draw_boxes_w_classifier_ex
+from utils.bbox import draw_boxes, draw_boxes_w_classifier, draw_boxes_w_classifier_ex, draw_boxes_w_classifier_sort
 from utils.classify import Beetle_Classifier
+from utils.sort import Sort
 from keras.models import load_model
 from tqdm import tqdm
 import numpy as np
@@ -33,7 +34,8 @@ def _main_(args):
     os.environ['CUDA_VISIBLE_DEVICES'] = config['train']['gpus']
     infer_model = load_model(config['train']['saved_weights_name'])
 
-    bc_net = Beetle_Classifier()
+    #bc_net = Beetle_Classifier()
+    bc_net = Sort()
     ###############################
     #   Predict bounding boxes 
     ###############################
@@ -88,7 +90,8 @@ def _main_(args):
                     for i in range(len(images)):
                         # draw bounding boxes on the image using labels
                         #draw_boxes(images[i], batch_boxes[i], config['model']['labels'], obj_thresh)  
-                        draw_boxes_w_classifier_ex(idx, bc_net, images[i], batch_boxes[i], config['model']['labels'], obj_thresh)   
+                        #draw_boxes_w_classifier_ex(idx, bc_net, images[i], batch_boxes[i], config['model']['labels'], obj_thresh)   
+                        draw_boxes_w_classifier_sort(idx, bc_net, images[i], batch_boxes[i], config['model']['labels'], obj_thresh)   
 
                         # show the video with detection bounding boxes          
                         if show_window: cv2.imshow('video with bboxes', images[i])  

@@ -311,3 +311,114 @@ def draw_boxes_w_classifier_ex(f_idx, cf, image, boxes, labels, obj_thresh, quie
             break
     '''
     return image 
+
+def draw_boxes_w_classifier_sort(f_idx, cf, image, boxes, labels, obj_thresh, quiet=True):
+    image_ori = image.copy()
+    #box_info = dict() #{idx:[id, (p)]}
+    #box_info = {0:[0], 1:[0],2:[0],3:[0],4:[0]}
+    frame_det = list()
+    box_xy = dict()# {box_idx: [revised, box]}
+    idx = 0
+
+    out_txt_path = "./output/f%d.log"%f_idx
+    fw = open(out_txt_path,'w')
+
+    for box in boxes:
+        #label_str = ''
+        label = -1
+        idx = idx + 1
+
+        for i in range(len(labels)):
+            if box.classes[i] > obj_thresh:
+                label = i
+
+        if label >= 0:
+            y0 , y1 = _correct_box(box.ymin, box.ymax)
+            x0 , x1 = _correct_box(box.xmin, box.xmax)
+            h = y1 - y0
+            w = x1 - x0
+            if h > w:
+                w = h
+            else:
+                h = w
+            frame_cropped_box = image_ori[y0:y0+h, x0:x0+w]
+            #cid,p = cf.predict_Beetle_id_wP(frame_cropped_box)
+            cid = 0
+            box_xy[idx] = {'revised':0, 'box':box, 'label':label, 'cid':cid}
+            frame_det.append([x0,y0,x0+w,y0+h, box.get_score()])
+            #insert_box_info(box_info, box_xy, cid, idx, p, fw)
+            #box_info[cid].append([idx,p])
+
+
+    #fw.write(str(box_info))
+    fw.write('\n')
+    fw.write(str(box_xy))
+    frame_det = np.array(frame_det)
+    #print(frame_det)
+    track_bbs_ids = cf.update(frame_det)
+    #print(track_bbs_ids)
+    ### Draw all boxes test
+    revised_img = False
+    i=0
+    for bid in box_xy.keys():
+        box = box_xy[bid]['box']
+        label = box_xy[bid]['label']
+        revised = box_xy[bid]['revised']
+        if revised<0:
+            print("f:%d drop conflict boxes"%f_idx)
+            continue
+        #temp code    
+        #cid = box_xy[bid]['cid']
+        cid = int(track_bbs_ids[i, 4])
+        box.xmin = int(track_bbs_ids[i, 0])
+        box.xmax = int(track_bbs_ids[i, 2])
+        box.ymin = int(track_bbs_ids[i, 1])
+        box.ymax = int(track_bbs_ids[i, 3])
+        print(cid, box.xmin, box.xmax, box.ymin, box.ymax)
+        i += 1
+        label_str = (labels[label] + ' ' + str(round(box.get_score()*100, 2)) + '%')
+        if revised:
+            label_str = "%d_r%d_%s"%(bid, cid, label_str)
+            cr = (0,0,255)
+            print("f:%d revise box%d"%(f_idx, bid))
+            revised_img = True
+        else:
+            label_str = "%d_c%d_%s"%(bid, cid, label_str)
+            cr = get_color(cid)
+
+        text_size = cv2.getTextSize(label_str, cv2.FONT_HERSHEY_SIMPLEX, 1.1e-3 * image.shape[0], 5)
+        width, height = text_size[0][0], text_size[0][1]
+        region = np.array([[box.xmin-3,        box.ymin], 
+                            [box.xmin-3,        box.ymin-height-26], 
+                            [box.xmin+width+13, box.ymin-height-26], 
+                            [box.xmin+width+13, box.ymin]], dtype='int32')    
+
+        cv2.rectangle(img=image, pt1=(box.xmin,box.ymin), pt2=(box.xmax,box.ymax), color=cr, thickness=2)
+        cv2.fillPoly(img=image, pts=[region], color=get_color(cid))
+        cv2.putText(img=image, 
+                    text=label_str, 
+                    org=(box.xmin+13, box.ymin - 13), 
+                    fontFace=cv2.FONT_HERSHEY_SIMPLEX, 
+                    fontScale=1e-3 * image.shape[0], 
+                    color=(0,0,0), 
+                    thickness=2)                            
+    
+    if not revised_img:
+        out_img_path = "./output/f%d.jpg"%f_idx
+    else:
+        out_img_path = "./output/revised_f%d.jpg"%f_idx   
+
+    cv2.imwrite(out_img_path, image)
+    fw.close()
+    ''' 
+    for k in box_info.keys():
+        v = box_info[k]
+        if len(v)>1:
+            out_txt_path = "./output/f%d.log"%f_idx
+            fw = open(out_txt_path,'w')
+            fw.write(str(box_info))
+            fw.close()
+            print("Got error frame idx:%d"%f_idx)
+            break
+    '''
+    return image 
