@@ -312,10 +312,9 @@ def draw_boxes_w_classifier_ex(f_idx, cf, image, boxes, labels, obj_thresh, quie
     '''
     return image 
 
-def draw_boxes_w_classifier_sort(f_idx, cf, image, boxes, labels, obj_thresh, quiet=True):
+def draw_boxes_w_classifier_sort(f_idx, cf, sort, track_id_map, image, boxes, labels, obj_thresh, quiet=True):
     image_ori = image.copy()
-    #box_info = dict() #{idx:[id, (p)]}
-    #box_info = {0:[0], 1:[0],2:[0],3:[0],4:[0]}
+    box_info = {0:[0], 1:[0],2:[0],3:[0],4:[0]}
     frame_det = list()
     box_xy = dict()# {box_idx: [revised, box]}
     idx = 0
@@ -341,25 +340,62 @@ def draw_boxes_w_classifier_sort(f_idx, cf, image, boxes, labels, obj_thresh, qu
                 w = h
             else:
                 h = w
-            frame_cropped_box = image_ori[y0:y0+h, x0:x0+w]
+            #frame_cropped_box = image_ori[y0:y0+h, x0:x0+w]
             #cid,p = cf.predict_Beetle_id_wP(frame_cropped_box)
-            cid = 0
-            box_xy[idx] = {'revised':0, 'box':box, 'label':label, 'cid':cid}
+            #cid = 0
+            #box_xy[idx] = {'revised':0, 'box':box, 'label':label, 'cid':cid}
             frame_det.append([x0,y0,x0+w,y0+h, box.get_score()])
             #insert_box_info(box_info, box_xy, cid, idx, p, fw)
             #box_info[cid].append([idx,p])
 
 
-    #fw.write(str(box_info))
-    fw.write('\n')
-    fw.write(str(box_xy))
+
     frame_det = np.array(frame_det)
-    print(frame_det)
-    track_bbs_ids = cf.update(frame_det)
-    print(track_bbs_ids)
+    #print(frame_det)
+    track_bbs_ids = sort.update(frame_det)
+
+    for r in track_bbs_ids:
+        #print(r)
+        track_id = int(r[4])
+        box = BoundBox(int(r[0]),int(r[1]),int(r[2]),int(r[3]))
+
+        #print(box.xmin, box.ymin, box.xmax, box.ymax)
+        if track_id in track_id_map.keys():
+            cid = track_id_map[track_id][0]
+            p = track_id_map[track_id][1]
+        else:
+            #new track id
+            y0 , y1 = _correct_box(box.ymin, box.ymax)
+            x0 , x1 = _correct_box(box.xmin, box.xmax)
+            h = y1 - y0
+            w = x1 - x0
+            if h > w:
+                w = h
+            else:
+                h = w
+            frame_cropped_box = image_ori[y0:y0+h, x0:x0+w]            
+            cid,p = cf.predict_Beetle_id_wP(frame_cropped_box)
+            if p[cid] < 0.8:
+                print("pass low accuracy box %d"%p[cid])
+                continue
+
+            track_id_map[track_id] = [cid, p]
+
+        labels = ['Moomin', 'Snork', 'Mymble','Sniff']
+        box_xy[track_id] = {'revised':0, 'box':box, 'label':labels[cid], 'cid':cid}
+        insert_box_info(box_info, box_xy, cid, track_id, p, fw)
+
+    fw.write("\nframe_det:\n")
+    fw.write(str(frame_det))
+    fw.write("\ntrackers:\n")
+    fw.write(str(track_bbs_ids))
+    fw.write("\nbox_xy\n")
+    fw.write(str(box_xy))
+    fw.write("\ntrack_id_map\n")
+    fw.write(str(track_id_map))
+
     ### Draw all boxes test
     revised_img = False
-    i=0
     for bid in box_xy.keys():
         box = box_xy[bid]['box']
         label = box_xy[bid]['label']
@@ -367,18 +403,9 @@ def draw_boxes_w_classifier_sort(f_idx, cf, image, boxes, labels, obj_thresh, qu
         if revised<0:
             print("f:%d drop conflict boxes"%f_idx)
             continue
-        #temp code    
-        #cid = box_xy[bid]['cid']
-        if i>= track_bbs_ids.shape[0]:
-            break
-        cid = int(track_bbs_ids[i, 4])
-        box.xmin = int(track_bbs_ids[i, 0])
-        box.xmax = int(track_bbs_ids[i, 2])
-        box.ymin = int(track_bbs_ids[i, 1])
-        box.ymax = int(track_bbs_ids[i, 3])
-        print(i,cid, box.xmin, box.xmax, box.ymin, box.ymax)
-        i += 1
-        label_str = (labels[label] + ' ' + str(round(box.get_score()*100, 2)) + '%')
+        cid = box_xy[bid]['cid']       
+        print(cid, box.xmin, box.xmax, box.ymin, box.ymax)
+        label_str = label
         if revised:
             label_str = "%d_r%d_%s"%(bid, cid, label_str)
             cr = (0,0,255)
@@ -403,24 +430,21 @@ def draw_boxes_w_classifier_sort(f_idx, cf, image, boxes, labels, obj_thresh, qu
                     fontFace=cv2.FONT_HERSHEY_SIMPLEX, 
                     fontScale=1e-3 * image.shape[0], 
                     color=(0,0,0), 
-                    thickness=2)                            
+                    thickness=2) 
+
     
     if not revised_img:
         out_img_path = "./output/f%d.jpg"%f_idx
     else:
         out_img_path = "./output/revised_f%d.jpg"%f_idx   
+    cv2.putText(img=image, 
+                text="%04d"%f_idx, 
+                org=(13, 20), 
+                fontFace=cv2.FONT_HERSHEY_SIMPLEX, 
+                fontScale=1e-3 * image.shape[0], 
+                color=(255,255,200), 
+                thickness=2)   
 
     cv2.imwrite(out_img_path, image)
     fw.close()
-    ''' 
-    for k in box_info.keys():
-        v = box_info[k]
-        if len(v)>1:
-            out_txt_path = "./output/f%d.log"%f_idx
-            fw = open(out_txt_path,'w')
-            fw.write(str(box_info))
-            fw.close()
-            print("Got error frame idx:%d"%f_idx)
-            break
-    '''
     return image 

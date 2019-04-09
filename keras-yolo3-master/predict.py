@@ -34,8 +34,8 @@ def _main_(args):
     os.environ['CUDA_VISIBLE_DEVICES'] = config['train']['gpus']
     infer_model = load_model(config['train']['saved_weights_name'])
 
-    #bc_net = Beetle_Classifier()
-    bc_net = Sort()
+    bc_net = Beetle_Classifier()
+    bc_tracker = Sort()
     ###############################
     #   Predict bounding boxes 
     ###############################
@@ -76,6 +76,7 @@ def _main_(args):
         images      = []
         start_point = 0 #%
         show_window = False
+        track_id_map = dict()
         for idx in tqdm(range(nb_frames)):
             _, image = video_reader.read()
 
@@ -91,8 +92,9 @@ def _main_(args):
                         # draw bounding boxes on the image using labels
                         #draw_boxes(images[i], batch_boxes[i], config['model']['labels'], obj_thresh)  
                         #draw_boxes_w_classifier_ex(idx, bc_net, images[i], batch_boxes[i], config['model']['labels'], obj_thresh)   
-                        draw_boxes_w_classifier_sort(idx, bc_net, images[i], batch_boxes[i], config['model']['labels'], obj_thresh)   
-
+                        #draw_boxes_w_classifier_sort(idx, bc_net, images[i], batch_boxes[i], config['model']['labels'], obj_thresh)
+                        draw_boxes_w_classifier_sort(idx, bc_net,bc_tracker,track_id_map, images[i], batch_boxes[i], config['model']['labels'], obj_thresh)   
+                        
                         # show the video with detection bounding boxes          
                         if show_window: cv2.imshow('video with bboxes', images[i])  
 
