@@ -3,3 +3,7 @@
 *.weights
 *.pyc
 *.h5
+*.avi
+*.log
+*.code-workspace
+*.gitignore
