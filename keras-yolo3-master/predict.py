@@ -36,6 +36,7 @@ def _main_(args):
 
     bc_net = Beetle_Classifier()
     bc_tracker = Sort()
+    print("\bmax age %d\n"%bc_tracker.max_age)
     ###############################
     #   Predict bounding boxes 
     ###############################

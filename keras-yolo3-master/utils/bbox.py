@@ -169,18 +169,22 @@ def fprint(fw, ostr):
     if fw:
         fw.write(ostr + '\n')
 
-def insert_box_info(boxs, boxs_xy, cid, bid, p_info, fw=None):
+def insert_box_info(boxs, boxs_xy, cid, bid, p_info, fw=None, tracked=True):
     new_score = p_info[cid]
+    fprint(fw, "box:%d c:%d score:%04f"%(bid,cid,new_score))
+    if new_score >=1:
+        fprint(fw, "incorrect score %d-c%d score:%d"%(bid,cid,new_score))
+    
     if boxs[cid][0] == 0: #no stroed score
         boxs[cid][0] = new_score
         boxs[cid].append([bid, p_info])
         if boxs_xy[bid]['cid']!= cid:
             print('ERROR! %d-%d-%d'%(bid, cid, boxs_xy[bid]['cid']))
-        fprint(fw,"[A] Insert new info wo conflict")
+        fprint(fw,"[A] Insert new info wo conflict c:%d"%cid)
         #fprint(fw,boxs)
-        return
+        return cid, p_info
     else:
-        if new_score>boxs[cid][0]: #replace boxes info
+        if tracked and new_score>boxs[cid][0]: #replace boxes info
             fprint(fw, "[B] conflict 1")
             revised_info = list(boxs[cid][1][1])
             revised_info[cid] = -1
@@ -189,7 +193,7 @@ def insert_box_info(boxs, boxs_xy, cid, bid, p_info, fw=None):
             revised_cid = np.argmax(revised_info)
             boxs_xy[restore_bid]['cid'] = revised_cid
             boxs_xy[restore_bid]['revised'] = True
-            fprint(fw, "unsorted %s-%s-%s"%(revised_cid, restore_bid, revised_info))
+            fprint(fw, "unsorted rc%s-c%s-%s"%(revised_cid, restore_bid, revised_info))
             boxs[cid][0] = new_score
             boxs[cid][1][0] = bid
             boxs[cid][1][1] = p_info
@@ -199,7 +203,7 @@ def insert_box_info(boxs, boxs_xy, cid, bid, p_info, fw=None):
             boxs_xy[bid]['revised'] = -1 #dont draw this box
             fprint(fw, "[D] box slots are full, discard this one bid%d"%bid)
             print("[D] box slots are full, discard this one bid%d"%bid)
-            return
+            return cid, p_info
         else:    
             fprint(fw, "[C]conflict 2")
             revised_info = list(p_info)
@@ -209,7 +213,7 @@ def insert_box_info(boxs, boxs_xy, cid, bid, p_info, fw=None):
             boxs_xy[bid]['cid'] = revised_cid
             boxs_xy[bid]['revised'] = True
 
-            fprint(fw, "revised %s-%s-%s"%(revised_cid, bid, revised_info))
+            fprint(fw, "revise c:%s-%s"%(revised_cid, revised_info))
             return insert_box_info(boxs, boxs_xy,revised_cid,bid, revised_info, fw)      
 
 
@@ -352,17 +356,21 @@ def draw_boxes_w_classifier_sort(f_idx, cf, sort, track_id_map, image, boxes, la
 
     frame_det = np.array(frame_det)
     #print(frame_det)
-    track_bbs_ids = sort.update(frame_det)
+    track_bbs_ids = sort.update(frame_det, f_idx)
 
+    track_bbs_ids = track_bbs_ids[track_bbs_ids[:,4].argsort()]
+    
     for r in track_bbs_ids:
         #print(r)
         track_id = int(r[4])
         box = BoundBox(int(r[0]),int(r[1]),int(r[2]),int(r[3]))
-
+        
+        tracked = False
         #print(box.xmin, box.ymin, box.xmax, box.ymax)
         if track_id in track_id_map.keys():
             cid = track_id_map[track_id][0]
             p = track_id_map[track_id][1]
+            tracked = True
         else:
             #new track id
             y0 , y1 = _correct_box(box.ymin, box.ymax)
@@ -376,14 +384,18 @@ def draw_boxes_w_classifier_sort(f_idx, cf, sort, track_id_map, image, boxes, la
             frame_cropped_box = image_ori[y0:y0+h, x0:x0+w]            
             cid,p = cf.predict_Beetle_id_wP(frame_cropped_box)
             if p[cid] < 0.8:
-                print("pass low accuracy box %d"%p[cid])
+                print("f:%d ignore low accuracy box t:%d c:%d p:%03f"%(f_idx, track_id , cid, p[cid]))
                 continue
-
+            if p[cid] >= 1.0:
+                print("f:%d ignore abnormal box t:%d c:%d p:%s"%(f_idx, track_id, cid, str(p)))
+                continue
+                
             track_id_map[track_id] = [cid, p]
 
         labels = ['Moomin', 'Snork', 'Mymble','Sniff']
-        box_xy[track_id] = {'revised':0, 'box':box, 'label':labels[cid], 'cid':cid}
-        insert_box_info(box_info, box_xy, cid, track_id, p, fw)
+        box_xy[track_id] = {'revised':0, 'box':box, 'labels':labels, 'cid':cid}
+        cid, p = insert_box_info(box_info, box_xy, cid, track_id, p, fw, tracked)
+        track_id_map[track_id] = [cid, p]
 
     fw.write("\nframe_det:\n")
     fw.write(str(frame_det))
@@ -393,23 +405,26 @@ def draw_boxes_w_classifier_sort(f_idx, cf, sort, track_id_map, image, boxes, la
     fw.write(str(box_xy))
     fw.write("\ntrack_id_map\n")
     fw.write(str(track_id_map))
-
+    fw.write("\ntrack_ids\n")
+    fw.write(str(sort.get_trackers_id()))
+        
     ### Draw all boxes test
     revised_img = False
     for bid in box_xy.keys():
         box = box_xy[bid]['box']
-        label = box_xy[bid]['label']
+        
         revised = box_xy[bid]['revised']
         if revised<0:
             print("f:%d drop conflict boxes"%f_idx)
             continue
-        cid = box_xy[bid]['cid']       
-        print(cid, box.xmin, box.xmax, box.ymin, box.ymax)
+        cid = box_xy[bid]['cid']   
+        label = box_xy[bid]['labels'][cid]
+        #print(f_idx, cid, box.xmin, box.xmax, box.ymin, box.ymax)
         label_str = label
         if revised:
             label_str = "%d_r%d_%s"%(bid, cid, label_str)
             cr = (0,0,255)
-            print("f:%d revise box%d"%(f_idx, bid))
+            #print("f:%d revise box%d"%(f_idx, bid))
             revised_img = True
         else:
             label_str = "%d_c%d_%s"%(bid, cid, label_str)

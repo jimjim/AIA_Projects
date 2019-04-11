@@ -173,7 +173,7 @@ def associate_detections_to_trackers(detections,trackers,iou_threshold = 0.3):
 
 
 class Sort(object):
-  def __init__(self,max_age=1,min_hits=3):
+  def __init__(self,max_age=50,min_hits=3):
     """
     Sets key parameters for SORT
     """
@@ -182,7 +182,13 @@ class Sort(object):
     self.trackers = []
     self.frame_count = 0
 
-  def update(self,dets):
+  def get_trackers_id(self):
+    ids = []
+    for trk in self.trackers:
+      ids.append(trk.id+1)
+    return ids       
+    
+  def update(self,dets,f_idx):
     """
     Params:
       dets - a numpy array of detections in the format [[x1,y1,x2,y2,score],[x1,y1,x2,y2,score],...]
@@ -224,10 +230,12 @@ class Sort(object):
         i -= 1
         #remove dead tracklet
         if(trk.time_since_update > self.max_age):
-          self.trackers.pop(i)
+          d = self.trackers.pop(i)
+          print("f%d del tracker %d"%(f_idx, d.id))
     if(len(ret)>0):
       return np.concatenate(ret)
     return np.empty((0,5))
+ 
     
 def parse_args():
     """Parse input arguments."""
