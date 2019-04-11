@@ -422,12 +422,12 @@ def draw_boxes_w_classifier_sort(f_idx, cf, sort, track_id_map, image, boxes, la
         #print(f_idx, cid, box.xmin, box.xmax, box.ymin, box.ymax)
         label_str = label
         if revised:
-            label_str = "%d_r%d_%s"%(bid, cid, label_str)
+            label_str = "%s (tkr:%d)"%( label_str,bid)
             cr = (0,0,255)
             #print("f:%d revise box%d"%(f_idx, bid))
             revised_img = True
         else:
-            label_str = "%d_c%d_%s"%(bid, cid, label_str)
+            label_str = "%s (tkr:%d)"%(label_str,bid)
             cr = get_color(cid)
 
         text_size = cv2.getTextSize(label_str, cv2.FONT_HERSHEY_SIMPLEX, 1.1e-3 * image.shape[0], 5)
