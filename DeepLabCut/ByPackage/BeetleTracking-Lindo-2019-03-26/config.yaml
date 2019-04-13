@@ -1,0 +1,50 @@
+# Project definitions (do not edit)
+Task: BeetleTracking
+scorer: Lindo
+date: Mar26
+
+# Project path (change when moving around)
+project_path: /home/jovyan/jt072-09-biodiv-beetle/DeepLabCut/examples/BeetleTracking-Lindo-2019-03-26
+
+# Annotation data set configuration (and individual video cropping parameters)
+video_sets:
+  /home/jovyan/jt072-09-biodiv-beetle/DeepLabCut/examples/BeetleTracking-Lindo-2019-03-26/videos/2016-10-14_x264.avi:
+    crop: 0, 1280, 0, 720
+bodyparts:
+- head
+- left-front-femur
+- left-rear-femur
+- right-front-femur
+- right-rear-femur
+- tailbase
+start: 0
+stop: 1
+numframes2pick: 100
+
+# Plotting configuration
+pcutoff: 0.1
+dotsize: 3
+alphavalue: 0.7
+colormap: jet
+
+# Training,Evaluation and Analysis configuration
+TrainingFraction:
+- 0.95
+iteration: 1
+resnet: 50
+snapshotindex: -1
+batch_size: 4
+
+# Cropping Parameters (for analysis and outlier frame detection)
+cropping: false
+#if cropping is true for analysis, then set the values here:
+x1: 0
+x2: 640
+y1: 277
+y2: 624
+
+# Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+corner2move2:
+- 50
+- 50
+move2corner: true

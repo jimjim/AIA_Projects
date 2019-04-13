@@ -1,2 +1,8 @@
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
+
+# DLC models folder
+dlc-models/
+evaluation-results/
+training-datasets/
+videos/
