@@ -16,5 +16,14 @@
     train: from other videos
     test: from detection data
 
+### utilities
+1. utility/extractor.ipynb
+轉換原有資料集成VOC格式
+2. utility/extractor_w_classification.ipynb
+驗證resnet模型在detection資料集上的分類結果
+3. utility/video_crop.ipynb
+切割video工具 (by frame index)
+4. utility/sp.py
+切割video指令（by time)
 
 
