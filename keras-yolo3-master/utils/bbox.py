@@ -316,7 +316,7 @@ def draw_boxes_w_classifier_ex(f_idx, cf, image, boxes, labels, obj_thresh, quie
     '''
     return image 
 
-def draw_boxes_w_classifier_sort(f_idx, cf, sort, track_id_map, image, boxes, labels, obj_thresh, quiet=True):
+def draw_boxes_w_classifier_sort(f_idx, cf, sort, track_id_map, image, boxes, labels,label_img_list, obj_thresh, quiet=True):
     image_ori = image.copy()
     box_info = {0:[0], 1:[0],2:[0],3:[0],4:[0]}
     frame_det = list()
@@ -422,14 +422,18 @@ def draw_boxes_w_classifier_sort(f_idx, cf, sort, track_id_map, image, boxes, la
         #print(f_idx, cid, box.xmin, box.xmax, box.ymin, box.ymax)
         label_str = label
         if revised:
-            label_str = "%s (tkr:%d)"%( label_str,bid)
+            label_str = "   %s (tkr:%d)"%( label_str,bid)
             cr = (0,0,255)
             #print("f:%d revise box%d"%(f_idx, bid))
             revised_img = True
         else:
-            label_str = "%s (tkr:%d)"%(label_str,bid)
+            label_str = "   %s (tkr:%d)"%(label_str,bid)
             cr = get_color(cid)
 
+        s_img = label_img_list[cid]
+        x_offset = box.xmin +1
+        y_offset = box.ymin -40
+        
         text_size = cv2.getTextSize(label_str, cv2.FONT_HERSHEY_SIMPLEX, 1.1e-3 * image.shape[0], 5)
         width, height = text_size[0][0], text_size[0][1]
         region = np.array([[box.xmin-3,        box.ymin], 
@@ -447,7 +451,8 @@ def draw_boxes_w_classifier_sort(f_idx, cf, sort, track_id_map, image, boxes, la
                     color=(0,0,0), 
                     thickness=2) 
 
-    
+        image[y_offset:y_offset+s_img.shape[0], x_offset:x_offset+s_img.shape[1]] = s_img
+
     if not revised_img:
         out_img_path = "./output/f%d.jpg"%f_idx
     else:

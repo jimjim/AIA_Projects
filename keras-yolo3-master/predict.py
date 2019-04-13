@@ -12,6 +12,21 @@ from keras.models import load_model
 from tqdm import tqdm
 import numpy as np
 
+def load_face_list(flist):
+    pic = cv2.imread('./team9/2606909-3ac.jpg')
+    pic = cv2.resize(pic, (40, 40), interpolation=cv2.INTER_CUBIC)
+    flist.append(pic)
+    pic = cv2.imread('./team9/2606909-3ac.jpg')
+    pic = cv2.resize(pic, (40, 40), interpolation=cv2.INTER_CUBIC)
+    flist.append(pic)
+    pic = cv2.imread('./team9/2606909-3ac.jpg')
+    pic = cv2.resize(pic, (40, 40), interpolation=cv2.INTER_CUBIC)
+    flist.append(pic)
+    pic = cv2.imread('./team9/2606909-3ac.jpg')
+    pic = cv2.resize(pic, (40, 40), interpolation=cv2.INTER_CUBIC)
+    flist.append(pic)            
+    return flist
+
 def _main_(args):
     config_path  = args.conf
     input_path   = args.input
@@ -33,6 +48,8 @@ def _main_(args):
     ###############################
     os.environ['CUDA_VISIBLE_DEVICES'] = config['train']['gpus']
     infer_model = load_model(config['train']['saved_weights_name'])
+    label_img_list = []
+    label_img_list = load_face_list(label_img_list)
 
     bc_net = Beetle_Classifier()
     bc_tracker = Sort()
@@ -94,7 +111,7 @@ def _main_(args):
                         #draw_boxes(images[i], batch_boxes[i], config['model']['labels'], obj_thresh)  
                         #draw_boxes_w_classifier_ex(idx, bc_net, images[i], batch_boxes[i], config['model']['labels'], obj_thresh)   
                         #draw_boxes_w_classifier_sort(idx, bc_net, images[i], batch_boxes[i], config['model']['labels'], obj_thresh)
-                        draw_boxes_w_classifier_sort(idx, bc_net,bc_tracker,track_id_map, images[i], batch_boxes[i], config['model']['labels'], obj_thresh)   
+                        draw_boxes_w_classifier_sort(idx, bc_net,bc_tracker,track_id_map, images[i], batch_boxes[i], config['model']['labels'],label_img_list, obj_thresh)   
                         
                         # show the video with detection bounding boxes          
                         if show_window: cv2.imshow('video with bboxes', images[i])  
