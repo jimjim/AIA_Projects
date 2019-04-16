@@ -4,6 +4,15 @@
 
 ![output_YoloTrackingClassify](images/output_YoloTrackingClassify.gif)
 
+> 原先預計用 DeepLabCut 做行為分析(追逐、攻擊、進食...etc)，很遺憾沒有完成，最終僅可用於單一埋葬蟲：
+
+![DLC_resnet50_1030000_labeled_single-beetle](images/DLC_resnet50_1030000_labeled_single-beetle.gif)
+
+ - Multiple predictions per image discussion:
+   - [issue#50](https://github.com/AlexEMG/DeepLabCut/issues/50)、[issue#125](https://github.com/AlexEMG/DeepLabCut/issues/125)、[issue#228](https://github.com/AlexEMG/DeepLabCut/issues/228)、[dlc community](https://forum.image.sc/t/generalizing-trained-network-one-animal-to-extract-predictions-for-multiple-animals/23838)
+
+> 四隻不同花樣的埋葬蟲：
+
 |     ID:1<br>Mark: O      |     ID:2<br>Mark: X      |     ID:3<br>Mark: =      |     ID:4<br>Mark: A      |
 | :----------------------: | :----------------------: | :----------------------: | :----------------------: |
 | ![](images/beetle_1.jpg) | ![](images/beetle_2.jpg) | ![](images/beetle_3.jpg) | ![](images/beetle_4.jpg) |
