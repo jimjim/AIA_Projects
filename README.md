@@ -1,7 +1,12 @@
 # 埋葬蟲移動軌跡偵測  Project_JT072_09_Biodiv-Beetle
-於影片(1280x720)中**識別**及**追踪**背上不同圖形的埋葬蟲(共4隻)
+於影片(1280x720)中**識別**及**追踪**背上不同圖形的埋葬蟲(共4隻)，產出結果：
+> 透過 Yolo3 找出 bounding box，接著採用計算 IOU 持續 tracking 相近的 bbox，於每次 tracking ID 變更時做 classify 更新目前 tracking bbox 的 burying beetle ID。
 
 ![output_YoloTrackingClassify](images/output_YoloTrackingClassify.gif)
+
+|     ID:1<br>Mark: O      |     ID:2<br>Mark: X      |     ID:3<br>Mark: =      |     ID:4<br>Mark: A      |
+| :----------------------: | :----------------------: | :----------------------: | :----------------------: |
+| ![](images/beetle_1.jpg) | ![](images/beetle_2.jpg) | ![](images/beetle_3.jpg) | ![](images/beetle_4.jpg) |
 
 ## Code structure
 
@@ -13,7 +18,7 @@
 1. `transfer_resnet50-0321-2.ipynb` 運用 ResNet50 建立 `/datasets/beetle-tracking/classification_data` 的訓練模型
 
 #### keras-yolo3-master/
- - 修改 Yolo3 適用於埋葬蟲資料並加入tracking 與 classify，詳細執**行步驟與使用說明**請參閱 [keras-yolo3/README](/keras-yolo3-master/README.md)
+ - 修改 Yolo3 適用於埋葬蟲資料並加入tracking 與 classify，詳細**執行步驟與使用說明**請參閱 [keras-yolo3/README](/keras-yolo3-master/README.md)
 
 #### utility/
  1. `extractor.ipynb` 轉換原有資料集成 VOC 格式
