@@ -450,8 +450,8 @@ def draw_boxes_w_classifier_sort(f_idx, cf, sort, track_id_map, image, boxes, la
                     fontScale=1e-3 * image.shape[0], 
                     color=(0,0,0), 
                     thickness=2) 
-
-        image[y_offset:y_offset+s_img.shape[0], x_offset:x_offset+s_img.shape[1]] = s_img
+        if x_offset+s_img.shape[1]<image.shape[1] and y_offset+s_img.shape[0]<image.shape[0]:
+            image[y_offset:y_offset+s_img.shape[0], x_offset:x_offset+s_img.shape[1]] = s_img
 
     if not revised_img:
         out_img_path = "./output/f%d.jpg"%f_idx
@@ -465,6 +465,6 @@ def draw_boxes_w_classifier_sort(f_idx, cf, sort, track_id_map, image, boxes, la
                 color=(255,255,200), 
                 thickness=2)   
 
-    cv2.imwrite(out_img_path, image)
+    #cv2.imwrite(out_img_path, image)
     fw.close()
     return image 

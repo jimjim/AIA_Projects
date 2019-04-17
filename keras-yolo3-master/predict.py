@@ -13,16 +13,16 @@ from tqdm import tqdm
 import numpy as np
 
 def load_face_list(flist):
-    pic = cv2.imread('./team9/2606909-3ac.jpg')
+    pic = cv2.imread('./team9/0.jpg')
     pic = cv2.resize(pic, (40, 40), interpolation=cv2.INTER_CUBIC)
     flist.append(pic)
-    pic = cv2.imread('./team9/2606909-3ac.jpg')
+    pic = cv2.imread('./team9/1.jpg')
     pic = cv2.resize(pic, (40, 40), interpolation=cv2.INTER_CUBIC)
     flist.append(pic)
-    pic = cv2.imread('./team9/2606909-3ac.jpg')
+    pic = cv2.imread('./team9/2.jpg')
     pic = cv2.resize(pic, (40, 40), interpolation=cv2.INTER_CUBIC)
     flist.append(pic)
-    pic = cv2.imread('./team9/2606909-3ac.jpg')
+    pic = cv2.imread('./team9/3.jpg')
     pic = cv2.resize(pic, (40, 40), interpolation=cv2.INTER_CUBIC)
     flist.append(pic)            
     return flist
