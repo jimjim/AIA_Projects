@@ -134,19 +134,21 @@ def _main_(args):
             image_paths += [input_path]
 
         image_paths = [inp_file for inp_file in image_paths if (inp_file[-4:] in ['.jpg', '.png', 'JPEG'])]
-
+        track_id_map = dict()
         # the main loop
         for image_path in image_paths:
             image = cv2.imread(image_path)
             
-            print(image_path)
+            print("<<<<", image_path)
 
             # predict the bounding boxes
             boxes = get_yolo_boxes(infer_model, [image], net_h, net_w, config['model']['anchors'], obj_thresh, nms_thresh)[0]
 
             # draw bounding boxes on the image using labels
             #draw_boxes(image, boxes, config['model']['labels'], obj_thresh) 
-            draw_boxes_w_classifier(bc_net, image, boxes, config['model']['labels'], obj_thresh) 
+            #draw_boxes_w_classifier(bc_net, image, boxes, config['model']['labels'], obj_thresh) 
+            draw_boxes_w_classifier_sort(0, bc_net,bc_tracker,track_id_map, image, boxes, config['model']['labels'],label_img_list, obj_thresh)   
+
             # write the image with bounding boxes to file
             cv2.imwrite(output_path + image_path.split('/')[-1], np.uint8(image))         
 
